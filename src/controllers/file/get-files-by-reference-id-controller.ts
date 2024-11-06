@@ -1,5 +1,5 @@
 import type { Request, Response } from "express-serve-static-core";
-import { GetFileByReferenceIdService } from "../services/get-file-by-reference-id-service";
+import { GetFileByReferenceIdService } from "../../services/file/get-file-by-reference-id-service";
 
 export const getFilesByReferenceIdController = (req: Request, res: Response) => {
   const service = new GetFileByReferenceIdService

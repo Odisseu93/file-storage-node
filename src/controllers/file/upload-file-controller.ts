@@ -1,5 +1,5 @@
-import { generateHash } from "../utils/generateHash";
-import { ImportFileService } from "../services/import-file-service";
+import { generateHash } from "../../utils/generateHash";
+import { ImportFileService } from "../../services/file/import-file-service";
 import type { Request, Response } from "express";
 
 

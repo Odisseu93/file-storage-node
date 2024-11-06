@@ -1,14 +1,14 @@
 import type { Request, Response } from "express";
-import { GetFileByIdService } from "../services/get-file-by-id-service";
+import { DeleteFileService } from "../../services/file/delete-file-service";
 
-export const getFileController = (req: Request, res: Response,) => {
-  const service = new GetFileByIdService()
+export const deleteFileController = (req: Request, res: Response,) => {
+  const service = new DeleteFileService()
   service.execute({ fileId: req.params.fileId })
     .then(response => {
       if ("error" in response) {
         return res.status(response.statusCode).json(response.error)
       }
-      return res.status(response.statusCode).redirect(response.data.url)
+      return res.status(response.statusCode).json(response.data)
     })
     .catch(error => {
       console.log(error)
