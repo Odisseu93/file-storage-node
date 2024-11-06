@@ -1,9 +1,9 @@
 import express from "express";
 import { uploadFileMiddleware } from "../middlewares/uploadFileMiddleware";
-import { uploadFileController } from "../controllers/uploadFileController";
-import { getFileController } from "../controllers/getFileController";
-import { getFilesByReferenceIdController } from "../controllers/getFilesByReferenceIdController";
-import { deleteFileController } from "../controllers/deleteFileController";
+import { uploadFileController } from "../controllers/file/upload-file-controller";
+import { getFileController } from "../controllers/file/get-file-controller";
+import { getFilesByReferenceIdController } from "../controllers/file/get-files-by-reference-id-controller";
+import { deleteFileController } from "../controllers/file/delete-file-controller";
 
 const router = express.Router();
 
