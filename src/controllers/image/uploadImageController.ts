@@ -1,6 +1,6 @@
 import { generateHash } from "../../utils/generateHash";
 import type { Request, Response } from "express";
-import { ImportImageService } from "../../services/image/import-file-service";
+import { ImportImageService } from "../../services/image/import-image-service";
 
 
 export const uploadImageController = (req: Request, res: Response) => {
