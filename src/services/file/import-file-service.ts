@@ -1,7 +1,7 @@
-import type { ImportFileServiceInput, ImportFileServiceInterface, ImportFileServiceOutput } from "../interfaces/services/files/import-file-service-interface";
-import { FirebaseStorageRepository } from "../repositories/files/cloud/firebase-storage/firebase-storage-repository";
-import { FileDataBaseRepository } from "../repositories/files/database/file-database-repository";
-import { generateHash } from "../utils/generateHash";
+import type { ImportFileServiceInput, ImportFileServiceInterface, ImportFileServiceOutput } from "../../interfaces/services/file/import-file-service-interface";
+import { FirebaseStorageRepository } from "../../repositories/files/cloud/firebase-storage/firebase-storage-repository";
+import { FileDataBaseRepository } from "../../repositories/files/database/file-database-repository";
+import { generateHash } from "../../utils/generateHash";
 
 
 

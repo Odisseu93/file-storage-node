@@ -1,6 +1,6 @@
-import type { GetFileByIdServiceInterface, GetFileByIdSeviceInputType, GetFileByIdSeviceOutputType } from "../interfaces/services/files/get-file-service-interface";
-import { FirebaseStorageRepository } from "../repositories/files/cloud/firebase-storage/firebase-storage-repository";
-import { FileDataBaseRepository } from "../repositories/files/database/file-database-repository";
+import type { GetFileByIdServiceInterface, GetFileByIdSeviceInputType, GetFileByIdSeviceOutputType } from "../../interfaces/services/file/get-file-service-interface";
+import { FirebaseStorageRepository } from "../../repositories/files/cloud/firebase-storage/firebase-storage-repository";
+import { FileDataBaseRepository } from "../../repositories/files/database/file-database-repository";
 
 export class GetFileByIdService implements GetFileByIdServiceInterface {
   async execute(input: GetFileByIdSeviceInputType): Promise<GetFileByIdSeviceOutputType> {

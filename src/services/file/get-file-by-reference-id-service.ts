@@ -1,5 +1,5 @@
-import type { GetFileByRefIdServiceInterface, GetFileByRefIdSeviceInputType, GetFileByRefIdSeviceOutputType } from "../interfaces/services/files/get-file-by-reference-id-service-interface";
-import { FileDataBaseRepository } from "../repositories/files/database/file-database-repository";
+import type { GetFileByRefIdServiceInterface, GetFileByRefIdSeviceInputType, GetFileByRefIdSeviceOutputType } from "../../interfaces/services/file/get-file-by-reference-id-service-interface";
+import { FileDataBaseRepository } from "../../repositories/files/database/file-database-repository";
 
 export class GetFileByReferenceIdService implements GetFileByRefIdServiceInterface {
   async execute(input: GetFileByRefIdSeviceInputType): Promise<GetFileByRefIdSeviceOutputType> {

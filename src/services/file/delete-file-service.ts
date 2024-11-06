@@ -1,6 +1,6 @@
-import type { DeleteFileServiceInputType, DeleteFileServiceInterface, DeleteFileServiceOutputType } from "../interfaces/services/files/delete-file-sevice-interface";
-import { FirebaseStorageRepository } from "../repositories/files/cloud/firebase-storage/firebase-storage-repository";
-import { FileDataBaseRepository } from "../repositories/files/database/file-database-repository";
+import type { DeleteFileServiceInputType, DeleteFileServiceInterface, DeleteFileServiceOutputType } from "../../interfaces/services/file/delete-file-sevice-interface";
+import { FirebaseStorageRepository } from "../../repositories/files/cloud/firebase-storage/firebase-storage-repository";
+import { FileDataBaseRepository } from "../../repositories/files/database/file-database-repository";
 
 export class DeleteFileService implements DeleteFileServiceInterface {
   public async execute(input: DeleteFileServiceInputType): Promise<DeleteFileServiceOutputType> {
