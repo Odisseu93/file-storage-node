@@ -1,11 +1,8 @@
+import stream from "node:stream"
+
 import {
-  getDownloadURL,
-  uploadBytes,
-  ref,
-  list,
-  deleteObject,
 } from "firebase/storage";
-import { storageRef } from "../../../../libs/firebase-cloud-storage";
+import { bucket, } from "../../../../libs/firebase";
 import type { FileInterface } from "../../../../interfaces/file/file-interface";
 
 type GetImageInput = {
@@ -33,69 +30,116 @@ type DeleteFileInput = {
 export class FirebaseStorageRepository {
   /**
    * Retrieves the URL of an image from Firebase storage
-   * @see {@link https://firebase.google.com/docs/storage/web/upload-files?hl=pt-br}
+   * @see {@link https://cloud.google.com/storage/docs/samples/storage-generate-signed-url-v4}
    */
   public get(input: GetImageInput): Promise<GetImageOutPut> {
-    const imagesRef = ref(storageRef);
+    const file = bucket.file(input.imagePath);
 
     return new Promise((resolve, reject) => {
-      getDownloadURL(ref(imagesRef, input.imagePath))
-        .then((url) => resolve({ url }))
-        .catch((error) => reject(error));
-    });
+      // Generates a signed download URL (valid for a specific period)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 1); // Adds 1 day
+
+      file.getSignedUrl({
+        action: 'read', // Allows reading of the file
+        expires: expirationDate
+      })
+        .then((urls: string[]) => {
+          const url = urls[0];
+          resolve({ url });
+        })
+        .catch((error: unknown) => {
+          console.error("Failed to get download URL:", error);
+          reject(error);
+        })
+    })
   }
 
   /**
    * Imports an image into Firebase storage
-   * @see {@link https://firebase.google.com/docs/storage/web/upload-files?hl=pt-br }
+   * @see {@link https://cloud.google.com/storage/docs/samples/storage-stream-file-upload }
    */
-  public import(input: ImportFileInput) {
-    const imagesRef = ref(storageRef, `${input.category}/${input.refId}/${input.fileName}`);
+  public async import(input: ImportFileInput) {
+    const destFileName = `${input.category}/${input.refId}/${input.fileName}`;
 
-    // return uploadBytesResumable
-    return uploadBytes(imagesRef, input.data, input.metadata)
-      .then((snapshot) => {
-        console.log(
-          "Uploaded a blob or file!",
-          JSON.stringify({ metadata: snapshot.metadata }),
+    const file = bucket.file(destFileName)
 
-        );
-        return snapshot.metadata
+    async function blobToBuffer(blob: Blob) {
+      return await blob.arrayBuffer().then(buffer => Buffer.from(buffer));
+    }
+
+    const dataBuffer = input.data instanceof Buffer ? input.data : await blobToBuffer(input.data as Blob);
+
+    // Create a pass through stream from a string
+    const passthroughStream = new stream.PassThrough();
+    passthroughStream.end(dataBuffer);
+
+
+    const execute = (): Promise<{ name: string, timeCreated: string }> => {
+      return new Promise((resolve, reject) => {
+        passthroughStream.pipe(file.createWriteStream({ ...input.metadata })).on('finish', async () => {
+          console.log(`${destFileName} uploaded to ${bucket.name}`);
+
+          try {
+            const [metadata] = await file.getMetadata();
+            resolve({ name: metadata.name as string, timeCreated: metadata.timeCreated as string })
+          } catch (error) {
+            reject(error);
+          }
+        }).on("error", (error) => {
+          console.error(`An error occurred during the file upload: ${error}`);
+          reject(error);
+        })
       })
-      .catch((err) => {
-        console.log(err);
-      });
+    }
+
+    return execute()
   }
 
-  public getRefId(input: GetFileByRefIdInput) {
-    const listRef = ref(storageRef, input.ref);
-    return list(listRef, { maxResults: 100 })
-      .then((list) => {
-        const hasItems = !!list?.items;
+  public async getRefId(input: GetFileByRefIdInput) {
+    const directory = input.ref;                // Define the directory reference
 
-        if (!hasItems) return { files: [] };
+    try {
+      const [files] = await bucket.getFiles({ prefix: directory, maxResults: 100 });
 
-        return {
-          files: list.items.map(async (item) => ({
-            url: await getDownloadURL(ref(storageRef, item.fullPath))
-          })),
-        };
-      })
-      .catch((error) => {
-        return { error };
-      });
+      if (!files || files.length === 0) {
+        return { files: [] };
+      }
+
+      const fileUrls = await Promise.all(
+        files.map(async (file) => {
+          const [url] = await file.getSignedUrl({
+            action: 'read',
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+          });
+          return { url };
+        })
+      );
+
+      return { files: fileUrls };
+
+    } catch (error) {
+      console.error("Failed to retrieve files:", error);
+      return { error };
+    }
   }
+
 
   public delete(input: DeleteFileInput): Promise<{ message: string }> {
-    const imagesRef = ref(storageRef);
+    const file = bucket.file(input.imagePath);
 
     return new Promise((resolve, reject) => {
-      deleteObject(ref(imagesRef, input.imagePath))
-        .then(() => resolve({
-          message: `
-          The file ${input.imagePath.split("/").pop()} was deleted successfully!
-          ` }))
-        .catch((error) => reject(error));
+      file.delete()
+        .then(() => {
+          resolve({
+            message: `The file ${input.imagePath.split("/").pop()} was deleted successfully!`
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to delete file:", error);
+          reject({ error: "Failed to delete file", details: error });
+        });
     });
   }
+
 }
