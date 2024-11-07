@@ -34,7 +34,7 @@ type DeleteFileInput = {
 export class FirebaseStorageRepository {
   /**
    * Retrieves the URL of an image from Firebase storage
-   * @see {@link https://firebase.google.com/docs/storage/web/upload-files?hl=pt-br}
+   * @see {@link https://cloud.google.com/storage/docs/samples/storage-generate-signed-url-v4}
    */
   public get(input: GetImageInput): Promise<GetImageOutPut> {
     const file = bucket.file(input.imagePath);
@@ -50,7 +50,6 @@ export class FirebaseStorageRepository {
       })
         .then((urls: string[]) => {
           const url = urls[0];
-          console.log({ url })
           resolve({ url });
         })
         .catch((error: unknown) => {
@@ -62,7 +61,7 @@ export class FirebaseStorageRepository {
 
   /**
    * Imports an image into Firebase storage
-   * @see {@link https://firebase.google.com/docs/storage/web/upload-files?hl=pt-br }
+   * @see {@link https://cloud.google.com/storage/docs/samples/storage-stream-file-upload }
    */
   public async import(input: ImportFileInput) {
     const destFileName = `${input.category}/${input.refId}/${input.fileName}`;
