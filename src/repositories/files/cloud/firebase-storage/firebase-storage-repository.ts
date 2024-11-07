@@ -37,13 +37,27 @@ export class FirebaseStorageRepository {
    * @see {@link https://firebase.google.com/docs/storage/web/upload-files?hl=pt-br}
    */
   public get(input: GetImageInput): Promise<GetImageOutPut> {
-    const imagesRef = ref(storageRef);
+    const file = bucket.file(input.imagePath);
 
     return new Promise((resolve, reject) => {
-      getDownloadURL(ref(imagesRef, input.imagePath))
-        .then((url) => resolve({ url }))
-        .catch((error) => reject(error));
-    });
+      // Generates a signed download URL (valid for a specific period)
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 1); // Adds 1 day
+
+      file.getSignedUrl({
+        action: 'read', // Allows reading of the file
+        expires: expirationDate
+      })
+        .then((urls: string[]) => {
+          const url = urls[0];
+          console.log({ url })
+          resolve({ url });
+        })
+        .catch((error: unknown) => {
+          console.error("Failed to get download URL:", error);
+          reject(error);
+        })
+    })
   }
 
   /**
