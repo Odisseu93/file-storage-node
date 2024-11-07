@@ -1,11 +1,12 @@
+import stream from "node:stream"
+
 import {
   getDownloadURL,
-  uploadBytes,
   ref,
   list,
   deleteObject,
 } from "firebase/storage";
-import { storageRef } from "../../../../libs/firebase-cloud-storage";
+import { bucket, } from "../../../../libs/firebase";
 import type { FileInterface } from "../../../../interfaces/file/file-interface";
 
 type GetImageInput = {
@@ -49,22 +50,41 @@ export class FirebaseStorageRepository {
    * Imports an image into Firebase storage
    * @see {@link https://firebase.google.com/docs/storage/web/upload-files?hl=pt-br }
    */
-  public import(input: ImportFileInput) {
-    const imagesRef = ref(storageRef, `${input.category}/${input.refId}/${input.fileName}`);
+  public async import(input: ImportFileInput) {
+    const destFileName = `${input.category}/${input.refId}/${input.fileName}`;
 
-    // return uploadBytesResumable
-    return uploadBytes(imagesRef, input.data, input.metadata)
-      .then((snapshot) => {
-        console.log(
-          "Uploaded a blob or file!",
-          JSON.stringify({ metadata: snapshot.metadata }),
+    const file = bucket.file(destFileName)
 
-        );
-        return snapshot.metadata
+    async function blobToBuffer(blob: Blob) {
+      return await blob.arrayBuffer().then(buffer => Buffer.from(buffer));
+    }
+
+    const dataBuffer = input.data instanceof Buffer ? input.data : await blobToBuffer(input.data as Blob);
+
+    // Create a pass through stream from a string
+    const passthroughStream = new stream.PassThrough();
+    passthroughStream.end(dataBuffer);
+
+
+    const execute = (): Promise<{ name: string, timeCreated: string }> => {
+      return new Promise((resolve, reject) => {
+        passthroughStream.pipe(file.createWriteStream({ ...input.metadata })).on('finish', async () => {
+          console.log(`${destFileName} uploaded to ${bucket.name}`);
+
+          try {
+            const [metadata] = await file.getMetadata();
+            resolve({ name: metadata.name as string, timeCreated: metadata.timeCreated as string })
+          } catch (error) {
+            reject(error);
+          }
+        }).on("error", (error) => {
+          console.error(`An error occurred during the file upload: ${error}`);
+          reject(error);
+        })
       })
-      .catch((err) => {
-        console.log(err);
-      });
+    }
+
+    return execute()
   }
 
   public getRefId(input: GetFileByRefIdInput) {
