@@ -3,7 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch ./src/server.ts"
+    "dev": "bun --watch ./src/server.ts",
+    "cm": "bunx git-cz"
   },
   "devDependencies": {
     "@types/bun": "latest",
