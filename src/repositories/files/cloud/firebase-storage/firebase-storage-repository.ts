@@ -1,10 +1,6 @@
 import stream from "node:stream"
 
 import {
-  getDownloadURL,
-  ref,
-  list,
-  deleteObject,
 } from "firebase/storage";
 import { bucket, } from "../../../../libs/firebase";
 import type { FileInterface } from "../../../../interfaces/file/file-interface";
@@ -130,15 +126,20 @@ export class FirebaseStorageRepository {
 
 
   public delete(input: DeleteFileInput): Promise<{ message: string }> {
-    const imagesRef = ref(storageRef);
+    const file = bucket.file(input.imagePath);
 
     return new Promise((resolve, reject) => {
-      deleteObject(ref(imagesRef, input.imagePath))
-        .then(() => resolve({
-          message: `
-          The file ${input.imagePath.split("/").pop()} was deleted successfully!
-          ` }))
-        .catch((error) => reject(error));
+      file.delete()
+        .then(() => {
+          resolve({
+            message: `The file ${input.imagePath.split("/").pop()} was deleted successfully!`
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to delete file:", error);
+          reject({ error: "Failed to delete file", details: error });
+        });
     });
   }
+
 }
