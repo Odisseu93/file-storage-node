@@ -100,24 +100,34 @@ export class FirebaseStorageRepository {
     return execute()
   }
 
-  public getRefId(input: GetFileByRefIdInput) {
-    const listRef = ref(storageRef, input.ref);
-    return list(listRef, { maxResults: 100 })
-      .then((list) => {
-        const hasItems = !!list?.items;
+  public async getRefId(input: GetFileByRefIdInput) {
+    const directory = input.ref;                // Define the directory reference
 
-        if (!hasItems) return { files: [] };
+    try {
+      const [files] = await bucket.getFiles({ prefix: directory, maxResults: 100 });
 
-        return {
-          files: list.items.map(async (item) => ({
-            url: await getDownloadURL(ref(storageRef, item.fullPath))
-          })),
-        };
-      })
-      .catch((error) => {
-        return { error };
-      });
+      if (!files || files.length === 0) {
+        return { files: [] };
+      }
+
+      const fileUrls = await Promise.all(
+        files.map(async (file) => {
+          const [url] = await file.getSignedUrl({
+            action: 'read',
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+          });
+          return { url };
+        })
+      );
+
+      return { files: fileUrls };
+
+    } catch (error) {
+      console.error("Failed to retrieve files:", error);
+      return { error };
+    }
   }
+
 
   public delete(input: DeleteFileInput): Promise<{ message: string }> {
     const imagesRef = ref(storageRef);
