@@ -55,6 +55,8 @@ bun run
 - [Google cloud - Upload objects from memory](https://cloud.google.com/storage/docs/uploading-objects-from-memory)
 - [Google cloud - Create a GET-signed URL](https://cloud.google.com/storage/docs/samples/storage-generate-signed-url-v4)
 
+## License
+[MIT](./LICENSE.md)
 ## Developer
 
 <div align="center">
