@@ -32,7 +32,7 @@ export class ImportFileService implements ImportFileServiceInterface {
         fileName: input.fileName,
         mimeType: input.mimeType,
         createdAt: new Date(savedFileCloud.timeCreated),
-        originalFileName: savedFileCloud.name,
+        originalFileName: input.originalFileName,
         refId: input.refId
       })
 
